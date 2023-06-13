@@ -3,7 +3,7 @@ import { ExtensionContext, StatusBarAlignment } from 'vscode';
 
 export class StatusBar {
 	private static priority = 1000;
-	private static actionItem: StatusBarActionItem;
+	public static actionItem: StatusBarActionItem;
 
 	public static async initialize(ctx: ExtensionContext) {
 		console.log('init statusbar');
