@@ -5,10 +5,6 @@ export class StatusBarActionItem {
 
 	constructor(ctx: ExtensionContext, alignment: StatusBarAlignment, priority: number) {
 		this.item = window.createStatusBarItem(alignment, priority);
-        this.item.text = '$(play) Start tracking';
-		this.item.name = 'Tracking Status';
-		this.item.tooltip = 'Start Tracking';
-		this.item.command = 'gitlab-time-tracking.calculateTimeSpent';
 		this.item.show();
 		ctx.subscriptions.push(this.item);
 	}
@@ -17,7 +13,15 @@ export class StatusBarActionItem {
 		this.item.text = text;
 	}
 
+	public updateName(name: string) {
+		this.item.name = name;
+	}
+
 	public updateTooltip(tooltip: string) {
 		this.item.tooltip = tooltip;
+	}
+
+	public updateCommand(command: string) {
+		this.item.command = command;
 	}
 }
