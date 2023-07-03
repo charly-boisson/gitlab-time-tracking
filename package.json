@@ -28,10 +28,20 @@
           "default": "",
           "description": "The GitLab access token. (4Xx2UU6Fp6dCn_i_mkY1)"
         },
+        "gitlab-time-tracking.userId": {
+          "type": "number",
+          "default": "",
+          "description": "The userId of gitlab. (39)"
+        },
+        "gitlab-time-tracking.projectOfIssues": {
+          "type": "number",
+          "default": "",
+          "description": "The project id that manage issues. (138)"
+        },
         "gitlab-time-tracking.elapsedTime": {
           "type": "string",
           "default": "",
-          "description": "The GitLab access token. (4Xx2UU6Fp6dCn_i_mkY1)"
+          "description": ""
         }
       }
     }

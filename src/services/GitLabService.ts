@@ -28,8 +28,8 @@ export class GitLabService {
       },
         async () => {
         try {
-          const projectId = 138; // ID du projet GitLab
-          const assigneeId = 39; // ID du user GitLab
+          const projectId = vscode.workspace.getConfiguration('gitlab-time-tracking').get('projectOfIssues') // 138; // ID du projet GitLab
+          const assigneeId = vscode.workspace.getConfiguration('gitlab-time-tracking').get('userId') // 39; // ID du user GitLab
           const fromDate = new Date();
           fromDate.setMonth(fromDate.getMonth() - 3); // Date d'il y a 3 mois
           this.issues = await this.api.Issues.all({
@@ -69,6 +69,9 @@ export class GitLabService {
       const timeEstimate = `${hours}h${minutes}m${seconds}s`; // Format du temps écoulé
 
       try {
+        const selectedIssueId = issue.issueId; // Récupérer l'ID du ticket sélectionné
+        const selectedIssueTitle = issue.label; // Récupérer le titre du ticket sélectionné
+        vscode.window.showInformationMessage(`Selected issue: ${selectedIssueId} - ${selectedIssueTitle}`);
         // Mettre à jour le ticket avec le temps écoulé
         await this.api.Issues.addSpentTime(issue.projectId, issue.iid, timeEstimate);
 

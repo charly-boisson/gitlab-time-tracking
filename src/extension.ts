@@ -18,9 +18,6 @@ export function activate(context: vscode.ExtensionContext) {
       return
     }
     const elapsedTime = settingService.getElapsedTimeTmp()
-    console.log('**********************')
-    console.log(elapsedTime)
-    console.log('**********************')
     if(elapsedTime){
       // Calculer la durée écoulée en millisecondes
       const elapsedTimeStamp = (elapsedTime.hours * 60 * 60 + elapsedTime.minutes * 60 + elapsedTime.seconds) * 1000;
@@ -58,11 +55,7 @@ export function activate(context: vscode.ExtensionContext) {
         // Appeler la fonction pour récupérer les tickets assignés
         gitLabService.getAssignedIssues().then(() => {
           gitLabService.showIssueList().then((selectedIssue: any) => {
-            const selectedIssueId = selectedIssue.issueId; // Récupérer l'ID du ticket sélectionné
-            const selectedIssueTitle = selectedIssue.label; // Récupérer le titre du ticket sélectionné
             const elapsedTime = timeTracking.calculateElapsedTime();
-            const elapsedTimeString = timeTracking.elapsedTimeToString(elapsedTime);
-            vscode.window.showInformationMessage(`Selected issue: ${selectedIssueTitle} (ID: ${selectedIssueId})\nElapsed Time: ${elapsedTimeString}`);
             // Appeler la fonction pour ajouter le temps au ticket
             gitLabService.addTimeToIssue(selectedIssue.issue, elapsedTime);
           });
