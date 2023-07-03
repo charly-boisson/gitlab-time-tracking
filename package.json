@@ -14,22 +14,21 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "gitlab-time-tracking.calculateTimeSpent",
-        "title": "Gitlab time tracking"
-      }
-    ],
     "configuration": {
       "type": "object",
       "title": "GitLab Time Tracking",
       "properties": {
-        "gitlabTracking.host": {
+        "gitlab-time-tracking.host": {
           "type": "string",
           "default": "https://git.ignimission.com",
           "description": "The GitLab host URL. (https://git.ignimission.com)"
         },
-        "gitlabTracking.token": {
+        "gitlab-time-tracking.token": {
+          "type": "string",
+          "default": "",
+          "description": "The GitLab access token. (4Xx2UU6Fp6dCn_i_mkY1)"
+        },
+        "gitlab-time-tracking.elapsedTime": {
           "type": "string",
           "default": "",
           "description": "The GitLab access token. (4Xx2UU6Fp6dCn_i_mkY1)"

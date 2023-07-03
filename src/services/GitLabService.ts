@@ -1,6 +1,5 @@
 import { Gitlab } from '@gitbeaker/node';
 import * as vscode from 'vscode';
-
 export class GitLabService {
 
   private api: any | undefined;
@@ -10,56 +9,14 @@ export class GitLabService {
     this.issues = []
   }
 
-  public checkConfig(): Boolean {
-    const gitLabConfig = vscode.workspace.getConfiguration('gitlabTracking');
-    const host: string | null = gitLabConfig.get('host') ?? null;
-    const token: string | null = gitLabConfig.get('token') ?? null;
-    if (!host || !token) {
-      return false
-    } else {
-      this.api = new Gitlab({
-        host,
-        token,
-        camelize: true,
-        requestTimeout: 3000
-      });
-      return true
-    }
-  }
-
-  public async showGitLabConfigurationDialog() {
-    const hostInput = await vscode.window.showInputBox({
-      prompt: 'Enter GitLab Host',
-      placeHolder: 'https://gitlab.example.com',
-      ignoreFocusOut: true
+  public async initApi(): Promise<void> {
+    this.api = new Gitlab({
+      host: vscode.workspace.getConfiguration('gitlab-time-tracking').get('host'),
+      token: vscode.workspace.getConfiguration('gitlab-time-tracking').get('token'),
+      camelize: true,
+      requestTimeout: 3000
     });
-
-    if (!hostInput) {
-      return undefined;
-    }
-
-    const tokenInput = await vscode.window.showInputBox({
-      prompt: 'Enter GitLab Access Token',
-      placeHolder: 'Enter your access token',
-      password: true,
-      ignoreFocusOut: true
-    });
-
-    if (!tokenInput) {
-      return undefined;
-    }
-
-    // Sauvegarder les informations de configuration dans les paramètres de l'extension
-    vscode.workspace
-    .getConfiguration()
-    .update('gitlabTracking.host', hostInput, vscode.ConfigurationTarget.Global);
-  vscode.workspace
-    .getConfiguration()
-    .update('gitlabTracking.token', tokenInput, vscode.ConfigurationTarget.Global);
-
   }
-
-
 
 
   public async getAssignedIssues(): Promise<void> {
@@ -88,6 +45,7 @@ export class GitLabService {
   };
 
   public async showIssueList() {
+
     const issueQuickPickItems = this.issues.map(issue => {
       return {
         label: issue.title,

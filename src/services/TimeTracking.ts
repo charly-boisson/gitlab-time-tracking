@@ -1,12 +1,22 @@
+import { elapsedTimeInterface } from "../interfaces/elapsedTimeInterface";
+
 export class TimeTracking {
 
   private isTracking = false;
   private timer: NodeJS.Timer | undefined;
   private startTime: number | undefined;
-  private elapsedTime: { hours: number; minutes: number; seconds: number } | undefined;
+  private elapsedTime: elapsedTimeInterface | undefined;
 
-  public getIsTracking() {
+  public getIsTracking(): Boolean {
     return this.isTracking;
+  };
+
+  public getTracking(): elapsedTimeInterface | null {
+    return this.elapsedTime ?? null
+  }
+
+  public setStartTime(startTime: number) {
+    this.startTime = startTime;
   };
 
   public async startTracking(callback: Function) {
@@ -27,7 +37,7 @@ export class TimeTracking {
   };
 
 
-  public calculateElapsedTime(): { hours: number; minutes: number; seconds: number } | undefined {
+  public calculateElapsedTime(): elapsedTimeInterface | undefined {
     if (this.startTime) {
       const endTime = Date.now();
       const elapsedTime = endTime - this.startTime;
@@ -41,7 +51,7 @@ export class TimeTracking {
     return undefined;
   };
 
-  public elapsedTimeToString(elapsedTime: { hours: number; minutes: number; seconds: number } | undefined): string {
+  public elapsedTimeToString(elapsedTime: elapsedTimeInterface | undefined): string {
     if (elapsedTime) {
       const { hours, minutes, seconds } = elapsedTime;
       return `${this.padZero(hours)}:${this.padZero(minutes)}:${this.padZero(seconds)}`;

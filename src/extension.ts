@@ -1,61 +1,96 @@
 import * as vscode from 'vscode';
 import { StatusBar } from './views/statusbar/StatusBar';
-import { GitLabService, TimeTracking } from './services';
+import { GitLabService, TimeTracking, SettingService, ReminderService } from './services';
+
+const timeTracking = new TimeTracking();
+const settingService = new SettingService();
+const gitLabService = new GitLabService();
+const reminderService = new ReminderService();
 
 export function activate(context: vscode.ExtensionContext) {
 
-  const gitLabService = new GitLabService();
   const statusBar = new StatusBar(context);
-  const init = (): void  => {
+
+  const checkStateExtension = (): void  => {
     console.log('Congratulations, your extension "gitlab-time-tracking" is now active!');
-
-    if(gitLabService.checkConfig()){
-      statusBar.initTracking();
-    }else{
-      statusBar.initConfig();
+    if(!settingService.checkConfig()){
+      statusBar.setConfig(); // set config
+      return
     }
+    const elapsedTime = settingService.getElapsedTimeTmp()
+    console.log('**********************')
+    console.log(elapsedTime)
+    console.log('**********************')
+    if(elapsedTime){
+      // Calculer la durée écoulée en millisecondes
+      const elapsedTimeStamp = (elapsedTime.hours * 60 * 60 + elapsedTime.minutes * 60 + elapsedTime.seconds) * 1000;
+
+      // Calculer le nouveau startTime en fonction de la durée écoulée
+      const startTime = Date.now() - elapsedTimeStamp;
+
+      // Mettre à jour la propriété startTime de la classe TimeTracking
+      timeTracking.setStartTime(startTime);
+      return
+    }
+    if (timeTracking.getIsTracking()) {
+      statusBar.stopTracking(); // show btn stop
+
+    }
+    statusBar.startTracking();
+    reminderService.startPopupIntervalIfNeeded(timeTracking.getIsTracking())
   }
 
-  init()
-
-  const timeTracking = new TimeTracking();
-  const callbackInterval = (value: string) => {
-    statusBar.actionItem.updateText(`$(stop) (${value})`);
-  }
+  checkStateExtension()
 
   context.subscriptions.push(
-    vscode.commands.registerCommand('gitlab-time-tracking.calculateTimeSpent', async () => {
-      init()
-      if (!timeTracking.getIsTracking()) {
-        timeTracking.startTracking(callbackInterval).then(() => {
-          statusBar.actionItem.updateText('$(stop) (00:00:00) ');
-          statusBar.actionItem.updateTooltip('Stop Time Tracking');
-        });
-      } else {
-        timeTracking.stopTracking().then(() => {
-          statusBar.actionItem.updateText('$(play) Start tracking');
-          statusBar.actionItem.updateTooltip('Start Time Tracking');
-          // Appeler la fonction pour récupérer les tickets assignés
-          gitLabService.getAssignedIssues().then(() => {
-            gitLabService.showIssueList().then((selectedIssue: any) => {
-              const selectedIssueId = selectedIssue.issueId; // Récupérer l'ID du ticket sélectionné
-              const selectedIssueTitle = selectedIssue.label; // Récupérer le titre du ticket sélectionné
-              const elapsedTime = timeTracking.calculateElapsedTime();
-              const elapsedTimeString = timeTracking.elapsedTimeToString(elapsedTime);
-              vscode.window.showInformationMessage(`Selected issue: ${selectedIssueTitle} (ID: ${selectedIssueId})\nElapsed Time: ${elapsedTimeString}`);
-              // Appeler la fonction pour ajouter le temps au ticket
-              gitLabService.addTimeToIssue(selectedIssue.issue, elapsedTime);
-            });
+    vscode.commands.registerCommand('gitlab-time-tracking.startTracking', async () => {
+      reminderService.stopPopupInterval()
+      const callbackInterval = (value: string) => {
+        statusBar.setInterval(`$(stop) (${value})`);
+      }
+      timeTracking.startTracking(callbackInterval).then(() => {
+        statusBar.stopTracking();
+      });
+    }),
+    vscode.commands.registerCommand('gitlab-time-tracking.stopTracking', async () => {
+      gitLabService.initApi()
+      timeTracking.stopTracking().then(() => {
+        // Appeler la fonction pour récupérer les tickets assignés
+        gitLabService.getAssignedIssues().then(() => {
+          gitLabService.showIssueList().then((selectedIssue: any) => {
+            const selectedIssueId = selectedIssue.issueId; // Récupérer l'ID du ticket sélectionné
+            const selectedIssueTitle = selectedIssue.label; // Récupérer le titre du ticket sélectionné
+            const elapsedTime = timeTracking.calculateElapsedTime();
+            const elapsedTimeString = timeTracking.elapsedTimeToString(elapsedTime);
+            vscode.window.showInformationMessage(`Selected issue: ${selectedIssueTitle} (ID: ${selectedIssueId})\nElapsed Time: ${elapsedTimeString}`);
+            // Appeler la fonction pour ajouter le temps au ticket
+            gitLabService.addTimeToIssue(selectedIssue.issue, elapsedTime);
           });
         });
-      }
+        statusBar.startTracking();
+
+      });
     }),
     vscode.commands.registerCommand('gitlab-time-tracking.setConfig', async () => {
-      gitLabService.showGitLabConfigurationDialog()
-      statusBar.initTracking();
+      try {
+        await settingService.showConfigurationDialog()
+        statusBar.startTracking();
+      }catch(error: any) {
+        vscode.window.showErrorMessage(error.message);
+      }
     })
   );
+
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate(context: vscode.ExtensionContext) {
+   if(!timeTracking.getIsTracking()){
+    return
+   }
+   const elapsedTime = timeTracking.getTracking();
+   vscode.workspace.getConfiguration().update('gitlab-time-tracking.elapsedTime', elapsedTime, vscode.ConfigurationTarget.Workspace);
+   vscode.workspace
+   .getConfiguration()
+   .update('gitlab-time-tracking.elapsedTime', elapsedTime, vscode.ConfigurationTarget.Global);
+}
