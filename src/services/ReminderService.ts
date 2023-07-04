@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 export class ReminderService {
 
-  private FIVE_MINUTES = 0.5 * 60 * 1000; // 5 minutes en millisecondes
+  private FIVE_MINUTES = 5 * 60 * 1000; // 5 minutes en millisecondes
   private interval: NodeJS.Timeout | undefined = undefined;
 
   public startPopupIntervalIfNeeded(isTracking: Boolean) {
