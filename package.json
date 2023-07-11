@@ -38,9 +38,9 @@
           "default": "",
           "description": "The project id that manage issues. (138)"
         },
-        "gitlab-time-tracking.elapsedTime": {
-          "type": "string",
-          "default": "",
+        "gitlab-time-tracking.reminderEnabled": {
+          "type": "boolean",
+          "default": false,
           "description": ""
         }
       }

@@ -6,8 +6,11 @@ export class ReminderService {
   private interval: NodeJS.Timeout | undefined = undefined;
 
   public startPopupIntervalIfNeeded(isTracking: Boolean) {
+
+    const reminderEnabled = vscode.workspace.getConfiguration().get<boolean>('gitlab-time-tracking.reminderEnabled');
+
     // Vérifier si l'intervalle est déjà en cours
-    if (this.interval) {
+    if (!reminderEnabled || this.interval) {
       return;
     }
 
